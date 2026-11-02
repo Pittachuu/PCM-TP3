@@ -1,5 +1,5 @@
 // Gestão de UI
-class UIManager {
+export default class UIManager {
     constructor(app) {
         this.app = app;
         this.visualizationEngine = app.visualizationEngine;

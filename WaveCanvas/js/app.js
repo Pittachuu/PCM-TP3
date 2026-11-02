@@ -1,5 +1,10 @@
+import AudioProcessor from './AudioProcessor.js';
+import VisualizationEngine from './VisualizationEngine.js';
+import UIManager from './UIManager.js';
+import ExportManager from './ExportManager.js';
+
 // Classe principal da aplicação
-class App {
+export default class App {
     constructor() {
         this.audioProcessor = new AudioProcessor();
         this.visualizationEngine = new VisualizationEngine('audioCanvas');

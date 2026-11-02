@@ -1,5 +1,5 @@
 // Classe Abstrata Base para Visualizações
-class AudioVisualization {
+export default class AudioVisualization {
     constructor(canvas, audioProcessor) {
         if (this.constructor === AudioVisualization) {
             throw new Error('AudioVisualization é uma classe abstrata e não pode ser instanciada diretamente.');
@@ -46,7 +46,7 @@ class AudioVisualization {
         }
     }
     
-    _clearCanvas() {
+    clearCanvas() {
         // TODO: limpar canvas
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }

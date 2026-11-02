@@ -1,5 +1,7 @@
+import AudioVisualization from './AudioVisualization.js';
+
 // Visualizações Concretas
-class SpectrumVisualization extends AudioVisualization {
+export default class SpectrumVisualization extends AudioVisualization {
     constructor(canvas, audioProcessor) {
         super(canvas, audioProcessor);
         this.name = 'Espectro de Frequências';
@@ -8,7 +10,7 @@ class SpectrumVisualization extends AudioVisualization {
     
     draw() {
         // TODO: desenhar espectro de frequências
-        this._clearCanvas();
+        this.clearCanvas();
         
         // Implementação básica para teste
         const data = this.audioProcessor ? this.audioProcessor.getFrequencyData() : this.testData;

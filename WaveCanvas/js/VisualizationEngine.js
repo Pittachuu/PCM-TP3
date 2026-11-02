@@ -1,5 +1,9 @@
+import SpectrumVisualization from './SpectrumVisualization.js';
+import WaveformVisualization from './WaveformVisualization.js';
+import ParticleVisualization from './ParticleVisualization.js';
+
 // Motor de Visualização
-class VisualizationEngine {
+export default class VisualizationEngine {
     constructor(canvasId) {
         this.canvas = document.getElementById(canvasId);
         this.ctx = this.canvas.getContext('2d');
