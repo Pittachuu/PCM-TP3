@@ -1,11 +1,10 @@
 // Gestão de Exportação
-export default class ExportManager {
+class ExportManager {
     constructor(visualizationEngine) {
         this.visualizationEngine = visualizationEngine;
     }
     
     exportAsPNG() {
-        // TODO: exportar como PNG
         console.log('Exportando como PNG...');
         
         try {
@@ -20,7 +19,6 @@ export default class ExportManager {
     }
     
     exportAsJPEG(quality = 0.9) {
-        // TODO: exportar como JPEG
         console.log(`Exportando como JPEG com qualidade ${quality}...`);
         
         try {

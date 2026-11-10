@@ -1,5 +1,3 @@
-import App from './App.js';
-
 // Inicialização da aplicação quando o DOM estiver carregado
 document.addEventListener('DOMContentLoaded', () => {
     const app = new App();

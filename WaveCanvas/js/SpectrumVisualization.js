@@ -1,28 +1,40 @@
-import AudioVisualization from './AudioVisualization.js';
-
 // Visualizações Concretas
-export default class SpectrumVisualization extends AudioVisualization {
+class SpectrumVisualization extends AudioVisualization {
     constructor(canvas, audioProcessor) {
         super(canvas, audioProcessor);
         this.name = 'Espectro de Frequências';
         // Inicializar propriedades específicas
+        this.properties.barCount = 64;
+        this.properties.barSpacing = 2;
+        this.properties.showGrid = 1;
     }
     
     draw() {
-        // TODO: desenhar espectro de frequências
         this.clearCanvas();
-        
-        // Implementação básica para teste
+
+        if (this.properties.showGrid) {
+            this.drawGrid();
+        }
+        this.drawBars();
+    }
+
+    drawBars() {
         const data = this.audioProcessor ? this.audioProcessor.getFrequencyData() : this.testData;
-        const barWidth = this.canvas.width / data.length;
+        const normalized = this.applySensitivity(this.normalizeData(data), this.properties.sensitivity);
+        const usableBins = Math.floor(normalized.length * 0.5);
+        const barCount = Math.floor(this.properties.barCount);
+        const slotWidth = this.canvas.width / barCount;
+        const barWidth = Math.max(slotWidth - this.properties.barSpacing, 1);
         
-        for (let i = 0; i < data.length; i++) {
-            const barHeight = (data[i] / 255) * this.canvas.height;
-            const x = i * barWidth;
+        this.ctx.fillStyle = this.createGradient();
+        
+        for (let i = 0; i < barCount; i++) {
+            const dataIndex = Math.floor((i / barCount) * usableBins);
+            const barHeight = (normalized[dataIndex] || 0) * this.canvas.height;
+            const x = i * slotWidth;
             const y = this.canvas.height - barHeight;
             
-            this.ctx.fillStyle = `hsl(${i / data.length * 360}, 100%, 50%)`;
-            this.ctx.fillRect(x, y, barWidth - 1, barHeight);
+            this.ctx.fillRect(x, y, barWidth, barHeight);
         }
     }
     

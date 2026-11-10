@@ -1,21 +1,46 @@
 // Gestão de UI
-export default class UIManager {
+class UIManager {
     constructor(app) {
         this.app = app;
         this.visualizationEngine = app.visualizationEngine;
         this.audioProcessor = app.audioProcessor;
         
+        // Nome mostrado na etiqueta de cada propriedade
+        this.propertyLabels = {
+            sensitivity: 'Sensibilidade',
+            barCount: 'Número de barras',
+            barSpacing: 'Espaçamento entre barras',
+            showGrid: 'Grelha (0 = não, 1 = sim)'
+        };
+
+        // Intervalo (mínimo, máximo e passo) do slider de cada propriedade
+        this.propertyRanges = {
+            sensitivity: { min: 0.1, max: 3, step: 0.1 },
+            barCount: { min: 16, max: 256, step: 1 },
+            barSpacing: { min: 0, max: 10, step: 1 },
+            showGrid: { min: 0, max: 1, step: 1 }
+        };
+
         // Inicializar interface
         this.setupEventListeners();
+        this.setupAudioLevels();
+        this.updatePropertiesPanel();
     }
     
     updatePropertiesPanel() {
-        // TODO: atualizar painel de propriedades
         console.log('Atualizando painel de propriedades...');
+        const container = document.getElementById('properties-container');
+        container.innerHTML = '';
+        const properties = this.visualizationEngine.getVisualizationProperties();
+
+        for (const property in properties) {
+            const range = this.propertyRanges[property] || { min: 0, max: 1, step: 0.01 };
+            const control = this.createPropertyControl(property, properties[property], range.min, range.max, range.step);
+            container.appendChild(control);
+        }
     }
     
     updateAudioInfo(info, isError = false) {
-        // TODO: atualizar informações de áudio
         const audioStatus = document.getElementById('audioStatus');
         const audioLevel = document.getElementById('audioLevel');
         
@@ -30,7 +55,6 @@ export default class UIManager {
     }
     
     setButtonStates(playing) {
-        // TODO: atualizar estados dos botões
         const startMicBtn = document.getElementById('startMic');
         const stopAudioBtn = document.getElementById('stopAudio');
         
@@ -39,7 +63,6 @@ export default class UIManager {
     }
     
     showError(message) {
-        // TODO: mostrar mensagem de erro
         const errorModal = document.getElementById('errorModal');
         const errorMessage = document.getElementById('errorMessage');
         
@@ -60,7 +83,6 @@ export default class UIManager {
     }
     
     setupEventListeners() {
-        // TODO: configurar event listeners
         document.getElementById('startMic').addEventListener('click', () => {
             this.app.startMicrophone();
         });
@@ -89,16 +111,24 @@ export default class UIManager {
     }
     
     setupAudioLevels() {
-        // TODO: configurar monitorização de níveis de áudio
+        this.levelIntervalId = setInterval(() => {
+            if (this.audioProcessor.isPlaying) {
+                const level = Math.round(this.audioProcessor.calculateAudioLevel() * 100);
+                document.getElementById('audioLevel').textContent = `Nível: ${level}%`;
+            } else if (this.visualizationEngine.isRunning && !this.app.isStarting) {
+                // O áudio acabou sozinho (a animação ainda estava ligada)
+                this.app.stopAudio();
+                this.updateAudioInfo({ status: 'Áudio terminado' });
+            }
+        }, 100);
     }
     
     createPropertyControl(property, value, min, max, step) {
-        // TODO: criar controlo de propriedade
         const container = document.createElement('div');
         container.className = 'property-control';
         
         const label = document.createElement('label');
-        label.textContent = property;
+        label.textContent = this.propertyLabels[property] || property;
         label.htmlFor = `prop-${property}`;
         
         const input = document.createElement('input');

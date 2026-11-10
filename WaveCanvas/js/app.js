@@ -1,13 +1,8 @@
-import AudioProcessor from './AudioProcessor.js';
-import VisualizationEngine from './VisualizationEngine.js';
-import UIManager from './UIManager.js';
-import ExportManager from './ExportManager.js';
-
 // Classe principal da aplicação
-export default class App {
+class App {
     constructor() {
         this.audioProcessor = new AudioProcessor();
-        this.visualizationEngine = new VisualizationEngine('audioCanvas');
+        this.visualizationEngine = new VisualizationEngine('audioCanvas', this.audioProcessor);
         this.uiManager = new UIManager(this);
         this.exportManager = new ExportManager(this.visualizationEngine);
         
@@ -15,38 +10,115 @@ export default class App {
         this.init();
     }
     
+    /**
+     * Põe a aplicação no estado inicial (sem áudio, botão do microfone ativo).
+     *
+     * @returns {void}
+     */
     init() {
-        // TODO: inicializar a aplicação
         console.log('App inicializada');
+        this.isStarting = false;
+        this.uiManager.setButtonStates(false);
+        this.uiManager.updateAudioInfo({ status: 'Parado' });
     }
     
-    startMicrophone() {
-        // TODO: iniciar captura do microfone
+    /**
+     * Liga o microfone, arranca a animação e atualiza a interface.
+     * Se falhar, mostra o erro e repõe o botão.
+     *
+     * @async
+     * @returns {Promise<void>}
+     */
+    async startMicrophone() {
         console.log('Iniciando microfone...');
+
+        if (this.isStarting) {
+            return
+        };
+
+        this.isStarting = true;
+        this.uiManager.updateAudioInfo({ status: 'A ligar o microfone...' });
+        this.uiManager.setButtonStates(true);
+
+        try {
+            await this.audioProcessor.startMicrophone();
+            this.visualizationEngine.start();
+            this.uiManager.updateAudioInfo({ status: 'Microfone ativo' });
+        } catch (error) {
+            console.error('Erro no microfone:', error);
+            let message = `Erro no microfone: ${error.message}`;
+
+            if (error.name === 'NotAllowedError') {
+                message = 'Permissão do microfone negada.';
+            } else if (error.name === 'NotFoundError') {
+                message = 'Nenhum microfone encontrado.';
+            }
+
+            this.uiManager.setButtonStates(false);
+            this.uiManager.updateAudioInfo('Microfone não ligou', true);
+            this.uiManager.showError(message);
+        } finally {
+            this.isStarting = false;
+        }
     }
     
-    loadAudioFile(file) {
-        // TODO: carregar ficheiro de áudio
+    async loadAudioFile(file) {
         console.log('Carregando ficheiro de áudio...');
+
+        if (this.isStarting) {
+            return
+        };
+
+        this.isStarting = true;
+        this.uiManager.updateAudioInfo({ status: `A carregar ${file.name}...` });
+        this.uiManager.setButtonStates(true);
+
+        try {
+            await this.audioProcessor.loadAudioFile(file);
+            this.visualizationEngine.start();
+            this.uiManager.updateAudioInfo({ status: `A tocar: ${file.name}` });
+        } catch (error) {
+            console.error('Erro ao carregar o ficheiro:', error);
+            this.uiManager.setButtonStates(false);
+            this.uiManager.updateAudioInfo('Ficheiro não carregou', true);
+            this.uiManager.showError(`Erro ao carregar o ficheiro: ${error.message}`);
+        } finally {
+            this.isStarting = false;
+        }
     }
     
+    /**
+     * Para o áudio e a animação e repõe a interface.
+     *
+     * @returns {void}
+     */
     stopAudio() {
-        // TODO: parar áudio
         console.log('Parando áudio...');
+        this.audioProcessor.stop();
+        this.visualizationEngine.stop();
+        this.uiManager.setButtonStates(false);
+        this.uiManager.updateAudioInfo({ status: 'Parado' });
     }
     
     setVisualization(type) {
-        // TODO: definir tipo de visualização
         console.log(`Definindo visualização: ${type}`);
+        const success = this.visualizationEngine.setVisualization(type);
+        
+        if (success) {
+            this.uiManager.updatePropertiesPanel();
+        } else {
+            this.uiManager.showError(`A visualização "${type}" não existe.`);
+        }
     }
     
     exportFrame() {
-        // TODO: exportar frame atual
         console.log('Exportando frame...');
+        this.exportManager.exportAsPNG();
     }
-    
+
     destroy() {
-        // TODO: limpar recursos
         console.log('Destruindo aplicação...');
+        this.audioProcessor.stop();
+        this.visualizationEngine.stop();
     }
 }

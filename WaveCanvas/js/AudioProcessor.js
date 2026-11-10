@@ -1,36 +1,30 @@
 // Processamento de Áudio
+
+
 /**
  * Gere a Web Audio API: captura de áudio (microfone ou ficheiro) e
  * análise em tempo real, fornecendo dados de frequência e de forma de onda.
  */
-export default class AudioProcessor {
-    // Atributos privados
-    /** @type {AudioContext|null} Contexto de áudio onde vivem todos os nós. */
-    #audioContext;
-    /** @type {AnalyserNode|null} Nó que analisa o som. */
-    #analyser;
-    /** @type {MediaStream|null} Stream do microfone (só quando se usa o microfone). */
-    #mediaStream;
-    /** @type {AudioBufferSourceNode|null} Fonte do ficheiro de áudio em reprodução. */
-    #sourceNode;
-    /** @type {Uint8Array} Intensidade de cada frequência (0 a 255). */
-    #frequencyData;
-    /** @type {Uint8Array} Amostras da forma de onda (0 a 255, silêncio = 128). */
-    #waveformData;
-
+class AudioProcessor {
     /**
      * Cria o processador de áudio no estado inicial (sem áudio a tocar).
      * As propriedades são preenchidas quando o áudio é iniciado.
      */
     constructor() {
-        this.#audioContext = null;
-        this.#analyser = null;
-        this.#mediaStream = null;
-        this.#frequencyData = new Uint8Array();
-        this.#waveformData = new Uint8Array();
-        /** @type {boolean} Indica se há áudio a ser processado (público). */
+        /** @type {AudioContext|null} Contexto de áudio onde vivem todos os nós. */
+        this.audioContext = null;
+        /** @type {AnalyserNode|null} Nó que analisa o som. */
+        this.analyser = null;
+        /** @type {MediaStream|null} Stream do microfone (só quando se usa o microfone). */
+        this.mediaStream = null;
+        /** @type {Uint8Array} Intensidade de cada frequência (0 a 255). */
+        this.frequencyData = new Uint8Array();
+        /** @type {Uint8Array} Amostras da forma de onda (0 a 255, silêncio = 128). */
+        this.waveformData = new Uint8Array();
+        /** @type {boolean} Indica se há áudio a ser processado. */
         this.isPlaying = false;
-        this.#sourceNode = null;
+        /** @type {AudioBufferSourceNode|null} Fonte do ficheiro de áudio em reprodução. */
+        this.sourceNode = null;
     }
     
     /**
@@ -44,10 +38,10 @@ export default class AudioProcessor {
     async startMicrophone() {
         console.log('Iniciando captura do microfone...');
         this.stop();
-        this.#audioContext = new AudioContext();
-        this.#mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        const source = this.#audioContext.createMediaStreamSource(this.#mediaStream);
-        this.#setupAnalyser(source);
+        this.audioContext = new AudioContext();
+        this.mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const source = this.audioContext.createMediaStreamSource(this.mediaStream);
+        this.setupAnalyser(source);
         this.isPlaying = true;
     }
     
@@ -55,16 +49,16 @@ export default class AudioProcessor {
      * Cria o analisador e os arrays de dados com o tamanho certo.
      * É chamado uma vez ao iniciar cada fonte de áudio (microfone ou ficheiro).
      *
-     * @private
      * @param {AudioNode} source - Fonte de áudio a ligar ao analisador.
      * @returns {void}
      */
-    #setupAnalyser(source) {
-        this.#analyser = this.#audioContext.createAnalyser();
-        this.#analyser.fftSize = 2048;
-        source.connect(this.#analyser);
-        this.#frequencyData = new Uint8Array(this.#analyser.frequencyBinCount);
-        this.#waveformData = new Uint8Array(this.#analyser.fftSize);
+    setupAnalyser(source) {
+        this.analyser = this.audioContext.createAnalyser();
+        this.analyser.fftSize = 2048;
+        this.analyser.smoothingTimeConstant = 0.8;
+        source.connect(this.analyser);
+        this.frequencyData = new Uint8Array(this.analyser.frequencyBinCount);
+        this.waveformData = new Uint8Array(this.analyser.fftSize);
     }
     
     /**
@@ -73,63 +67,63 @@ export default class AudioProcessor {
      *
      * @async
      * @param {File} file - Ficheiro escolhido no input de ficheiro.
-     * @returns {Promise<void>} Resolve quando a reprodução arranca.
+     * @returns {Promise<void>} Resolve quando a reprodução arranca (não quando acaba).
      * @throws {Error} Se o ficheiro não puder ser lido ou descodificado.
      */
     async loadAudioFile(file) {
         console.log('Carregando ficheiro de áudio...');
-        this.stop();
-        this.#audioContext = new AudioContext();
 
-        if (this.#audioContext.state === 'suspended') {
-            await this.#audioContext.resume();
+        this.stop();
+        this.audioContext = new AudioContext();
+
+        if (this.audioContext.state === 'suspended') {
+            await this.audioContext.resume();
         }
 
         const arrayBuffer = await file.arrayBuffer();
-        const audioBuffer = await this.#audioContext.decodeAudioData(arrayBuffer);
-        const source = this.#audioContext.createBufferSource();
+        const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
+        const source = this.audioContext.createBufferSource();
         source.buffer = audioBuffer;
-        this.#setupAnalyser(source);
-        this.#analyser.connect(this.#audioContext.destination);
+        this.setupAnalyser(source);
+        this.analyser.connect(this.audioContext.destination);
 
         source.onended = () => {
-            if (this.#sourceNode === source) {
+            if (this.sourceNode === source) {
                 this.isPlaying = false;
             }
         };
 
-        this.#sourceNode = source;
+        this.sourceNode = source;
         source.start();
         this.isPlaying = true;
     }
     
     /**
      * Para o áudio atual: desliga o microfone, fecha o contexto de áudio
-     * e põe os dados a zero.
+     * e repõe os dados em silêncio (frequência a 0 e forma de onda a 128).
      *
      * @returns {void}
      */
     stop() {
         console.log('Parando processamento de áudio...');
-
-        if (this.#mediaStream) {
-            this.#mediaStream.getTracks().forEach(track => track.stop());
-            this.#mediaStream = null;
+        if (this.mediaStream) {
+            this.mediaStream.getTracks().forEach(track => track.stop());
+            this.mediaStream = null;
         }
 
-        if (this.#sourceNode) {
-            this.#sourceNode.onended = null;
-            this.#sourceNode = null;
+        if (this.sourceNode) {
+            this.sourceNode.onended = null;
+            this.sourceNode = null;
         }
 
-        if (this.#audioContext) {
-            this.#audioContext.close();
-            this.#audioContext = null;
+        if (this.audioContext) {
+            this.audioContext.close();
+            this.audioContext = null;
         }
 
-        this.#analyser = null;
-        this.#frequencyData.fill(0);
-        this.#waveformData.fill(0);
+        this.analyser = null;
+        this.frequencyData.fill(0);
+        this.waveformData.fill(128);
         this.isPlaying = false;
     }
     
@@ -140,12 +134,12 @@ export default class AudioProcessor {
      * @returns {void}
      */
     update() {
-        if (!this.#analyser) {
+        if (!this.analyser) {
             return;
         }
 
-        this.#analyser.getByteFrequencyData(this.#frequencyData);
-        this.#analyser.getByteTimeDomainData(this.#waveformData);
+        this.analyser.getByteFrequencyData(this.frequencyData);
+        this.analyser.getByteTimeDomainData(this.waveformData);
     }
     
     /**
@@ -154,7 +148,7 @@ export default class AudioProcessor {
      * @returns {Uint8Array} Intensidade de cada frequência, de 0 a 255.
      */
     getFrequencyData() {
-        return this.#frequencyData;
+        return this.frequencyData;
     }
     
     /**
@@ -163,24 +157,24 @@ export default class AudioProcessor {
      * @returns {Uint8Array} Amostras de 0 a 255, onde 128 é o silêncio.
      */
     getWaveformData() {
-        return this.#waveformData;
+        return this.waveformData;
     }
     
     /**
-     * Calcula o nível médio de áudio do momento.
+     * Calcula o nível de volume do momento (RMS da forma de onda).
      *
      * @returns {number} Valor entre 0 (silêncio) e 1 (máximo).
      */
     calculateAudioLevel() {
-        if (this.#frequencyData.length === 0) {
+        if (this.waveformData.length === 0) {
             return 0;
         }
 
         let sum = 0;
-        for (let i = 0; i < this.#frequencyData.length; i++) {
-            sum += this.#frequencyData[i];
+        for (let i = 0; i < this.waveformData.length; i++) {
+            const valor = (this.waveformData[i] - 128) / 128;
+            sum += valor * valor;
         }
-
-        return sum / this.#frequencyData.length / 255;
+        return Math.sqrt(sum / this.waveformData.length);
     }
 }
