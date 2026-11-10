@@ -6,44 +6,84 @@ class ParticleVisualization extends AudioVisualization {
         this.particles = [];
         this.lastTime = 0;
         
+        // Inicializar propriedades específicas
+        this.properties.particleCount = 50;
+        this.properties.connectionDistance = 100;
+
         // Inicializar partículas
         this.initParticles();
+
+        // Tamanho do canvas quando as partículas foram criadas
+        this.lastWidth = this.canvas.width;
+        this.lastHeight = this.canvas.height;
+        
     }
     
     draw() {
-        // TODO: desenhar partículas
         this.clearCanvas();
         this.drawParticles();
         this.drawConnections();
     }
     
-    update() {
-        // TODO: atualizar partículas
+        update() {
         super.update();
+        this.adaptToCanvas();
         this.updateParticles();
     }
     
+    adaptToCanvas() {
+        if (this.canvas.width === this.lastWidth && this.canvas.height === this.lastHeight){ 
+            return
+        };
+
+        for (const p of this.particles) {
+            p.x = (p.x / this.lastWidth) * this.canvas.width;
+            p.y = (p.y / this.lastHeight) * this.canvas.height;
+        }
+
+        this.lastWidth = this.canvas.width;
+        this.lastHeight = this.canvas.height;
+    }
+
     getProperties() {
-        // TODO: obter propriedades específicas
         return super.getProperties();
     }
     
     initParticles() {
-        // TODO: inicializar partículas
-        for (let i = 0; i < 50; i++) {
-            this.particles.push({
-                x: Math.random() * this.canvas.width,
-                y: Math.random() * this.canvas.height,
-                vx: (Math.random() - 0.5) * 2,
-                vy: (Math.random() - 0.5) * 2,
-                radius: Math.random() * 3 + 1,
-                color: `hsl(${Math.random() * 360}, 100%, 50%)`
-            });
+        for (let i = 0; i < this.properties.particleCount; i++) {
+            this.particles.push(this.createParticle());
+        }
+    }
+
+    createParticle() {
+        return {
+            x: Math.random() * this.canvas.width,
+            y: Math.random() * this.canvas.height,
+            vx: (Math.random() - 0.5) * 2,
+            vy: (Math.random() - 0.5) * 2,
+            radius: Math.random() * 3 + 1,
+            color: `hsl(${Math.random() * 360}, 100%, 50%)`
+        };
+    }
+
+    updateProperty(property, value) {
+        super.updateProperty(property, value);
+        if (property === 'particleCount') {
+            this.adjustParticleCount();
+        }
+    }
+
+    adjustParticleCount() {
+        const target = Math.floor(this.properties.particleCount);
+        while (this.particles.length > target) {
+            this.particles.pop();
+        }
+        while (this.particles.length < target) {
+            this.particles.push(this.createParticle());
         }
     }
     
     updateParticles() {
-        // TODO: atualizar estado das partículas
         const data = this.audioProcessor ? this.audioProcessor.getFrequencyData() : this.testData;
         const audioLevel = this.audioProcessor ? this.audioProcessor.calculateAudioLevel() : 0.5;
         
@@ -60,8 +100,8 @@ class ParticleVisualization extends AudioVisualization {
             
             // Aplicar influência do áudio
             if (data.length > 0) {
-                const freqIndex = Math.floor(i / this.particles.length * data.length);
-                const intensity = data[freqIndex] / 255;
+                const freqIndex = Math.floor(i / this.particles.length * data.length * 0.5);
+                const intensity = Math.min(data[freqIndex] / 255 * this.properties.sensitivity, 1);
                 
                 p.vx += (Math.random() - 0.5) * intensity * 0.5;
                 p.vy += (Math.random() - 0.5) * intensity * 0.5;
@@ -78,7 +118,6 @@ class ParticleVisualization extends AudioVisualization {
     }
     
     drawParticles() {
-        // TODO: desenhar partículas
         for (const p of this.particles) {
             this.ctx.beginPath();
             this.ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
@@ -88,8 +127,7 @@ class ParticleVisualization extends AudioVisualization {
     }
     
     drawConnections() {
-        // TODO: desenhar conexões entre partículas
-        const maxDistance = 100;
+        const maxDistance = this.properties.connectionDistance;
         
         for (let i = 0; i < this.particles.length; i++) {
             for (let j = i + 1; j < this.particles.length; j++) {

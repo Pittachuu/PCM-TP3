@@ -10,7 +10,11 @@ class UIManager {
             sensitivity: 'Sensibilidade',
             barCount: 'Número de barras',
             barSpacing: 'Espaçamento entre barras',
-            showGrid: 'Grelha (0 = não, 1 = sim)'
+            showGrid: 'Grelha (0 = não, 1 = sim)',
+            lineWidth: 'Espessura da linha',
+            glow: 'Brilho (glow)',
+            particleCount: 'Número de partículas',
+            connectionDistance: 'Distância das ligações'
         };
 
         // Intervalo (mínimo, máximo e passo) do slider de cada propriedade
@@ -18,7 +22,11 @@ class UIManager {
             sensitivity: { min: 0.1, max: 3, step: 0.1 },
             barCount: { min: 16, max: 256, step: 1 },
             barSpacing: { min: 0, max: 10, step: 1 },
-            showGrid: { min: 0, max: 1, step: 1 }
+            showGrid: { min: 0, max: 1, step: 1 },
+            lineWidth: { min: 1, max: 10, step: 1 },
+            glow: { min: 0, max: 30, step: 1 },
+            particleCount: { min: 10, max: 150, step: 1 },
+            connectionDistance: { min: 20, max: 200, step: 5 }
         };
 
         // Inicializar interface

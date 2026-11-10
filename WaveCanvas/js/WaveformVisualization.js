@@ -4,23 +4,41 @@ class WaveformVisualization extends AudioVisualization {
         super(canvas, audioProcessor);
         this.name = 'Forma de Onda';
         // Inicializar propriedades específicas
+        this.properties.lineWidth = 2;
+        this.properties.glow = 10;
+        this.properties.showGrid = 1;
     }
     
     draw() {
-        // TODO: desenhar forma de onda
         this.clearCanvas();
-        
-        // Implementação básica para teste
+
+        if (this.properties.showGrid) {
+            this.drawGrid();
+        }
+
+        this.drawWaveform();
+    }
+    
+    drawWaveform() {
         const data = this.audioProcessor ? this.audioProcessor.getWaveformData() : this.testData;
-        const sliceWidth = this.canvas.width / data.length;
+        const samples = this.normalizeData(data, 128, 256);
+        const sliceWidth = this.canvas.width / (samples.length - 1);
+        const centerY = this.canvas.height / 2;
+        
+        this.ctx.save();
+        this.ctx.strokeStyle = this.createGradient();
+        this.ctx.lineWidth = this.properties.lineWidth;
+        this.ctx.lineCap = 'round';
+        this.ctx.lineJoin = 'round';
+        this.ctx.shadowColor = '#4cc9f0';
+        this.ctx.shadowBlur = this.properties.glow;
         
         this.ctx.beginPath();
-        this.ctx.moveTo(0, this.canvas.height / 2);
-        
-        for (let i = 0; i < data.length; i++) {
-            const v = data[i] / 128.0;
-            const y = v * this.canvas.height / 2;
+
+        for (let i = 0; i < samples.length; i++) {
+            const amplitude = Math.max(-1, Math.min(1, samples[i] * this.properties.sensitivity));
             const x = i * sliceWidth;
+            const y = centerY - amplitude * centerY;
             
             if (i === 0) {
                 this.ctx.moveTo(x, y);
@@ -28,14 +46,12 @@ class WaveformVisualization extends AudioVisualization {
                 this.ctx.lineTo(x, y);
             }
         }
-        
-        this.ctx.strokeStyle = '#4cc9f0';
-        this.ctx.lineWidth = 2;
+
         this.ctx.stroke();
+        this.ctx.restore();
     }
-    
+
     getProperties() {
-        // TODO: obter propriedades específicas
         return super.getProperties();
     }
 }

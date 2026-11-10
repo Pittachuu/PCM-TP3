@@ -39,7 +39,6 @@ class SpectrumVisualization extends AudioVisualization {
     }
     
     getProperties() {
-        // TODO: obter propriedades específicas
         return super.getProperties();
     }
 }

@@ -17,9 +17,9 @@ class VisualizationEngine {
     }
     
     initVisualizations(audioProcessor) {
-        this.visualizations.set('spectrum', new SpectrumVisualization(this.canvas, this.audioProcessor));
-        this.visualizations.set('waveform', new WaveformVisualization(this.canvas, this.audioProcessor));
-        this.visualizations.set('particles', new ParticleVisualization(this.canvas, this.audioProcessor));
+        this.visualizations.set('spectrum', new SpectrumVisualization(this.canvas, audioProcessor));
+        this.visualizations.set('waveform', new WaveformVisualization(this.canvas, audioProcessor));
+        this.visualizations.set('particles', new ParticleVisualization(this.canvas, audioProcessor));
         this.currentVisualization = this.visualizations.get('spectrum');
     }
     
