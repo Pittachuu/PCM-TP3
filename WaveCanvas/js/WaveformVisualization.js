@@ -7,16 +7,20 @@ class WaveformVisualization extends AudioVisualization {
         this.properties.lineWidth = 2;
         this.properties.glow = 10;
         this.properties.showGrid = 1;
+        this.addColorProperties();
     }
     
     draw() {
         this.clearCanvas();
+        this.ctx.save();
+        this.ctx.globalAlpha = this.getIntensityAlpha();
 
         if (this.properties.showGrid) {
             this.drawGrid();
         }
 
         this.drawWaveform();
+        this.ctx.restore();
     }
     
     drawWaveform() {
@@ -30,8 +34,8 @@ class WaveformVisualization extends AudioVisualization {
         this.ctx.lineWidth = this.properties.lineWidth;
         this.ctx.lineCap = 'round';
         this.ctx.lineJoin = 'round';
-        this.ctx.shadowColor = '#4cc9f0';
-        this.ctx.shadowBlur = this.properties.glow;
+        this.ctx.shadowColor = this.properties.colorMid;
+        this.ctx.shadowBlur = this.getGlowAmount(this.properties.glow);
         
         this.ctx.beginPath();
 

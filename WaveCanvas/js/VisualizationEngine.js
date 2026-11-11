@@ -20,6 +20,9 @@ class VisualizationEngine {
         this.visualizations.set('spectrum', new SpectrumVisualization(this.canvas, audioProcessor));
         this.visualizations.set('waveform', new WaveformVisualization(this.canvas, audioProcessor));
         this.visualizations.set('particles', new ParticleVisualization(this.canvas, audioProcessor));
+        this.visualizations.set('circular', new CircularVisualization(this.canvas, audioProcessor));
+        this.visualizations.set('spectrum3d', new Spectrum3DVisualization(this.canvas, audioProcessor));
+        this.visualizations.set('oscilloscope', new OscilloscopeVisualization(this.canvas, audioProcessor));
         this.currentVisualization = this.visualizations.get('spectrum');
     }
     
@@ -94,8 +97,27 @@ class VisualizationEngine {
      */
     resize() {
         this.currentVisualization.resize(this.canvas.clientWidth, this.canvas.clientHeight);
+
+        // Mudar o tamanho apaga o canvas; se a animação está parada, redesenha
+        if (!this.isRunning) {
+            this.currentVisualization.draw();
+        }
     }
-    
+
+    /**
+     * Lista as visualizações disponíveis (chave, nome e classe), para a interface
+     * poder criar as pré-visualizações.
+     *
+     * @returns {{key: string, name: string, VisualizationClass: Function}[]} Lista de visualizações.
+     */
+    getVisualizationTypes() {
+        return Array.from(this.visualizations.entries()).map(([key, visualization]) => ({
+            key: key,
+            name: visualization.name,
+            VisualizationClass: visualization.constructor
+        }));
+    }
+
     /**
      * Devolve as propriedades da visualização atual.
      *

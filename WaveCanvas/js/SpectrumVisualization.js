@@ -7,15 +7,21 @@ class SpectrumVisualization extends AudioVisualization {
         this.properties.barCount = 64;
         this.properties.barSpacing = 2;
         this.properties.showGrid = 1;
+        this.addColorProperties();
+        this.properties.smoothing = 0.6;
+        this.smoothedBars = [];
     }
     
     draw() {
         this.clearCanvas();
+        this.ctx.save();
+        this.ctx.globalAlpha = this.getIntensityAlpha();
 
         if (this.properties.showGrid) {
             this.drawGrid();
         }
         this.drawBars();
+        this.ctx.restore();
     }
 
     drawBars() {
@@ -26,11 +32,17 @@ class SpectrumVisualization extends AudioVisualization {
         const slotWidth = this.canvas.width / barCount;
         const barWidth = Math.max(slotWidth - this.properties.barSpacing, 1);
         
+        const targets = [];
+        for (let i = 0; i < barCount; i++) {
+            const dataIndex = Math.floor((i / barCount) * usableBins);
+            targets.push(normalized[dataIndex] || 0);
+        }
+        this.smoothedBars = this.smoothData(this.smoothedBars, targets, this.properties.smoothing);
+        
         this.ctx.fillStyle = this.createGradient();
         
         for (let i = 0; i < barCount; i++) {
-            const dataIndex = Math.floor((i / barCount) * usableBins);
-            const barHeight = (normalized[dataIndex] || 0) * this.canvas.height;
+            const barHeight = this.smoothedBars[i] * this.canvas.height;
             const x = i * slotWidth;
             const y = this.canvas.height - barHeight;
             

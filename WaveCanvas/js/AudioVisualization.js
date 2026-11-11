@@ -12,6 +12,7 @@ class AudioVisualization {
         this.properties = {};
         this.testData = new Uint8Array(256);
         this.frameCount = 0;
+        this.audioLevel = audioProcessor ? 0 : 0.5;
         
         // Inicializar dados de teste
         for (let i = 0; i < this.testData.length; i++) {
@@ -19,6 +20,7 @@ class AudioVisualization {
         }
 
         this.properties.sensitivity = 1;
+        this.properties.intensity = 0.5;
     }
     
     draw() {
@@ -30,6 +32,7 @@ class AudioVisualization {
 
         if (this.audioProcessor) {
             this.audioProcessor.update();
+            this.audioLevel = this.lerp(this.audioLevel, this.audioProcessor.calculateAudioLevel(), 0.2);
         }
     }
     
@@ -76,10 +79,10 @@ class AudioVisualization {
     /**
      * Cria um gradiente vertical (de baixo para cima) com as cores indicadas.
      *
-     * @param {string[]} [colors] - Cores do gradiente, da base para o topo.
+     * @param {string[]} [colors] - Cores do gradiente, da base para o topo (por defeito, a paleta da visualização).
      * @returns {CanvasGradient} Gradiente pronto a usar em fillStyle ou strokeStyle.
      */
-    createGradient(colors = ['#4361ee', '#4cc9f0', '#f72585']) {
+    createGradient(colors = this.getPalette()) {
         const gradient = this.ctx.createLinearGradient(0, this.canvas.height, 0, 0);
         for (let i = 0; i < colors.length; i++) {
             gradient.addColorStop(i / Math.max(colors.length - 1, 1), colors[i]);
@@ -108,5 +111,97 @@ class AudioVisualization {
      */
     applySensitivity(data, sensitivity) {
         return data.map(value => Math.min(value * sensitivity, 1));
+    }
+
+    /**
+     * Acrescenta às propriedades as três cores da paleta (base, meio e topo).
+     * Cada visualização que usa a paleta chama este método no construtor.
+     *
+     * @returns {void}
+     */
+    addColorProperties() {
+        this.properties.colorLow = '#4361ee';
+        this.properties.colorMid = '#4cc9f0';
+        this.properties.colorHigh = '#f72585';
+    }
+
+    /**
+     * Devolve a paleta atual (base, meio e topo). Se a visualização não tiver
+     * cores próprias, usa as cores por defeito do projeto.
+     *
+     * @returns {string[]} Três cores em formato #rrggbb.
+     */
+    getPalette() {
+        return [
+            this.properties.colorLow || '#4361ee',
+            this.properties.colorMid || '#4cc9f0',
+            this.properties.colorHigh || '#f72585'
+        ];
+    }
+
+    /**
+     * Opacidade do desenho. A intensidade diz o quanto o volume influencia:
+     * com intensidade 0 é sempre 1; com intensidade 1 vai de 0.35 (silêncio)
+     * a 1 (volume alto).
+     *
+     * @returns {number} Opacidade entre 0.35 e 1.
+     */
+    getIntensityAlpha() {
+        const boost = Math.min(this.audioLevel * 3, 1);
+        return 1 - this.properties.intensity * 0.65 * (1 - boost);
+    }
+
+    /**
+     * Brilho (sombra) ajustado ao volume: com volume alto o brilho aumenta
+     * e com volume baixo diminui, tanto mais quanto maior a intensidade.
+     *
+     * @param {number} baseGlow - Brilho definido pelo utilizador.
+     * @returns {number} Brilho a usar neste frame.
+     */
+    getGlowAmount(baseGlow) {
+        const boost = Math.min(this.audioLevel * 3, 1);
+        return baseGlow * (1 + this.properties.intensity * (boost - 0.5));
+    }
+
+    /**
+     * Interpolação linear entre dois valores.
+     *
+     * @param {number} start - Valor inicial.
+     * @param {number} end - Valor final.
+     * @param {number} t - Fração do caminho (0 = start, 1 = end).
+     * @returns {number} Valor intermédio.
+     */
+    lerp(start, end, t) {
+        return start + (end - start) * t;
+    }
+
+    /**
+     * Aproxima, aos poucos, os valores anteriores dos valores novos
+     * (para as animações não darem saltos).
+     *
+     * @param {number[]|null} previous - Valores do frame anterior.
+     * @param {number[]} target - Valores novos.
+     * @param {number} smoothing - Suavização de 0 (sem suavizar) a 0.95 (muito lento).
+     * @returns {number[]} Valores suavizados.
+     */
+    smoothData(previous, target, smoothing) {
+        if (!previous || previous.length !== target.length) {
+            return target.slice();
+        }
+        return target.map((value, i) => this.lerp(previous[i], value, 1 - smoothing));
+    }
+
+    /**
+     * Converte uma cor #rrggbb para rgba(...) com a transparência indicada.
+     *
+     * @param {string} hex - Cor em formato #rrggbb.
+     * @param {number} alpha - Transparência de 0 a 1.
+     * @returns {string} Cor em formato rgba(r, g, b, a).
+     */
+    hexToRgba(hex, alpha) {
+        const r = parseInt(hex.slice(1, 3), 16);
+        const g = parseInt(hex.slice(3, 5), 16);
+        const b = parseInt(hex.slice(5, 7), 16);
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
     }
 }

@@ -9,6 +9,7 @@ class ParticleVisualization extends AudioVisualization {
         // Inicializar propriedades específicas
         this.properties.particleCount = 50;
         this.properties.connectionDistance = 100;
+        this.addColorProperties();
 
         // Inicializar partículas
         this.initParticles();
@@ -21,8 +22,11 @@ class ParticleVisualization extends AudioVisualization {
     
     draw() {
         this.clearCanvas();
+        this.ctx.save();
+        this.ctx.globalAlpha = this.getIntensityAlpha();
         this.drawParticles();
         this.drawConnections();
+        this.ctx.restore();
     }
     
         update() {
@@ -45,6 +49,18 @@ class ParticleVisualization extends AudioVisualization {
         this.lastHeight = this.canvas.height;
     }
 
+    /**
+     * Ajusta o tamanho do canvas e reposiciona as partículas na mesma proporção.
+     *
+     * @param {number} width - Nova largura.
+     * @param {number} height - Nova altura.
+     * @returns {void}
+     */
+    resize(width, height) {
+        super.resize(width, height);
+        this.adaptToCanvas();
+    }
+
     getProperties() {
         return super.getProperties();
     }
@@ -62,7 +78,7 @@ class ParticleVisualization extends AudioVisualization {
             vx: (Math.random() - 0.5) * 2,
             vy: (Math.random() - 0.5) * 2,
             radius: Math.random() * 3 + 1,
-            color: `hsl(${Math.random() * 360}, 100%, 50%)`
+            color: this.randomPaletteColor()
         };
     }
 
@@ -70,6 +86,29 @@ class ParticleVisualization extends AudioVisualization {
         super.updateProperty(property, value);
         if (property === 'particleCount') {
             this.adjustParticleCount();
+        } else if (property.startsWith('color')) {
+            this.recolorParticles();
+        }
+    }
+
+    /**
+     * Escolhe ao acaso uma das cores da paleta.
+     *
+     * @returns {string} Cor em formato #rrggbb.
+     */
+    randomPaletteColor() {
+        const palette = this.getPalette();
+        return palette[Math.floor(Math.random() * palette.length)];
+    }
+
+    /**
+     * Dá a cada partícula uma cor nova da paleta (quando o utilizador muda as cores).
+     *
+     * @returns {void}
+     */
+    recolorParticles() {
+        for (const p of this.particles) {
+            p.color = this.randomPaletteColor();
         }
     }
 
@@ -143,7 +182,7 @@ class ParticleVisualization extends AudioVisualization {
                     this.ctx.beginPath();
                     this.ctx.moveTo(p1.x, p1.y);
                     this.ctx.lineTo(p2.x, p2.y);
-                    this.ctx.strokeStyle = `rgba(76, 201, 240, ${opacity * 0.5})`;
+                    this.ctx.strokeStyle = this.hexToRgba(this.properties.colorMid, opacity * 0.5);
                     this.ctx.lineWidth = 1;
                     this.ctx.stroke();
                 }

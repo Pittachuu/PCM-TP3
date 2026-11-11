@@ -189,3 +189,116 @@ select {
 .hidden {
     display: none;
 }
+
+#properties-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 15px;
+}
+
+#properties-container .property-control {
+    margin-bottom: 0;
+}
+
+.property-control input[type="color"] {
+    height: 36px;
+    cursor: pointer;
+}
+
+.preview-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.preview-card {
+    background-color: #1a1a2e;
+    color: #e6e6e6;
+    border: 2px solid transparent;
+    border-radius: 6px;
+    padding: 5px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.8rem;
+    text-align: center;
+}
+
+.preview-card:hover {
+    /* border-color: muda só a cor da borda, sem mexer na espessura */
+    border-color: #4361ee;
+}
+
+.preview-card.active {
+    border-color: #4cc9f0;
+}
+
+.preview-card canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 4px;
+    margin-bottom: 5px;
+    background-color: #0f3460;
+}
+
+#canvas-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+#expandBtn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 10;
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(22, 33, 62, 0.8);
+    color: #e6e6e6;
+    border: 1px solid #4cc9f0;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+#expandBtn:hover {
+    background-color: #4361ee;
+}
+
+#expandBtn .icon-collapse {
+    display: none;
+}
+
+#visualization-area.expanded {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    /* bottom: distância ao fundo da janela (com top a 0, o elemento estica até ao fundo) */
+    bottom: 0;
+    z-index: 900;
+    border-radius: 0;
+}
+
+#visualization-area.expanded #canvas-wrapper {
+    /* flex: 1 faz o elemento ocupar todo o espaço livre que sobra na coluna */
+    flex: 1;
+}
+
+#visualization-area.expanded #audioCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+}
+
+#visualization-area.expanded #expandBtn .icon-expand {
+    display: none;
+}
+
+#visualization-area.expanded #expandBtn .icon-collapse {
+    display: block;
+}

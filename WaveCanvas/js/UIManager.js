@@ -14,7 +14,18 @@ class UIManager {
             lineWidth: 'Espessura da linha',
             glow: 'Brilho (glow)',
             particleCount: 'Número de partículas',
-            connectionDistance: 'Distância das ligações'
+            connectionDistance: 'Distância das ligações',
+            intensity: 'Intensidade (reação ao volume)',
+            colorLow: 'Cor da base',
+            colorMid: 'Cor do meio',
+            colorHigh: 'Cor do topo',
+            smoothing: 'Suavização',
+            innerRadius: 'Raio interior',
+            rotationSpeed: 'Velocidade de rotação',
+            depth: 'Profundidade (linhas)',
+            perspective: 'Perspetiva',
+            samples: 'Amostras visíveis',
+            traceColor: 'Cor do traço'
         };
 
         // Intervalo (mínimo, máximo e passo) do slider de cada propriedade
@@ -26,12 +37,24 @@ class UIManager {
             lineWidth: { min: 1, max: 10, step: 1 },
             glow: { min: 0, max: 30, step: 1 },
             particleCount: { min: 10, max: 150, step: 1 },
-            connectionDistance: { min: 20, max: 200, step: 5 }
+            connectionDistance: { min: 20, max: 200, step: 5 },
+            intensity: { min: 0.1, max: 1, step: 0.05 },
+            colorLow: { type: 'color' },
+            colorMid: { type: 'color' },
+            colorHigh: { type: 'color' },
+            smoothing: { min: 0, max: 0.95, step: 0.05 },
+            innerRadius: { min: 0.1, max: 0.7, step: 0.05 },
+            rotationSpeed: { min: -5, max: 5, step: 0.1 },
+            depth: { min: 10, max: 60, step: 1 },
+            perspective: { min: 0, max: 0.8, step: 0.05 },
+            samples: { min: 64, max: 1024, step: 16 },
+            traceColor: { type: 'color' }
         };
 
         // Inicializar interface
         this.setupEventListeners();
         this.setupAudioLevels();
+        this.createPreviews();
         this.updatePropertiesPanel();
     }
     
@@ -43,9 +66,72 @@ class UIManager {
 
         for (const property in properties) {
             const range = this.propertyRanges[property] || { min: 0, max: 1, step: 0.01 };
-            const control = this.createPropertyControl(property, properties[property], range.min, range.max, range.step);
+            let control;
+
+            if (range.type === 'color') {
+                control = this.createColorControl(property, properties[property]);
+            } else {
+                control = this.createPropertyControl(property, properties[property], range.min, range.max, range.step);
+            }
+
             container.appendChild(control);
         }
+
+        this.updatePreviewSelection();
+    }
+
+    /**
+     * Cria uma pré-visualização (miniatura) de cada visualização, desenhada
+     * com os dados de teste. Clicar numa miniatura escolhe essa visualização.
+     *
+     * @returns {void}
+     */
+    createPreviews() {
+        const container = document.getElementById('visualization-previews');
+        container.innerHTML = '';
+
+        this.visualizationEngine.getVisualizationTypes().forEach((item) => {
+            const card = document.createElement('button');
+            card.className = 'preview-card';
+            card.dataset.type = item.key;
+
+            const canvas = document.createElement('canvas');
+            canvas.width = 120;
+            canvas.height = 70;
+
+            const label = document.createElement('span');
+            label.textContent = item.name;
+
+            card.appendChild(canvas);
+            card.appendChild(label);
+            container.appendChild(card);
+
+            card.addEventListener('click', () => {
+                document.getElementById('visualizationType').value = item.key;
+                this.app.setVisualization(item.key);
+            });
+
+            // Visualização só para a miniatura (sem áudio: usa os dados de teste)
+            const preview = new item.VisualizationClass(canvas, null);
+            preview.updateProperty('connectionDistance', 25);
+            for (let i = 0; i < 40; i++) {
+                preview.update();
+            }
+            preview.draw();
+        });
+    }
+
+    /**
+     * Destaca a miniatura da visualização que está escolhida.
+     *
+     * @returns {void}
+     */
+    updatePreviewSelection() {
+        const type = document.getElementById('visualizationType').value;
+
+        document.querySelectorAll('.preview-card').forEach((card) => {
+            card.classList.toggle('active', card.dataset.type === type);
+        });
     }
     
     updateAudioInfo(info, isError = false) {
@@ -109,6 +195,18 @@ class UIManager {
             this.app.setVisualization(e.target.value);
         });
         
+        document.getElementById('expandBtn').addEventListener('click', () => {
+            this.toggleExpanded();
+        });
+        
+        // Esc fecha o gráfico ampliado
+        document.addEventListener('keydown', (e) => {
+            const area = document.getElementById('visualization-area');
+            if (e.key === 'Escape' && area.classList.contains('expanded')) {
+                this.toggleExpanded();
+            }
+        });
+        
         document.getElementById('exportPNG').addEventListener('click', () => {
             this.app.exportManager.exportAsPNG();
         });
@@ -149,6 +247,53 @@ class UIManager {
         
         input.addEventListener('input', (e) => {
             this.visualizationEngine.updateVisualizationProperty(property, parseFloat(e.target.value));
+        });
+        
+        container.appendChild(label);
+        container.appendChild(input);
+        
+        return container;
+    }
+
+    /**
+     * Amplia o gráfico para cobrir a janela, ou volta ao tamanho normal.
+     *
+     * @returns {void}
+     */
+    toggleExpanded() {
+        const area = document.getElementById('visualization-area');
+        const button = document.getElementById('expandBtn');
+        const expanded = area.classList.toggle('expanded');
+
+        button.title = expanded ? 'Reduzir' : 'Ampliar';
+        button.setAttribute('aria-label', expanded ? 'Reduzir gráfico' : 'Ampliar gráfico');
+
+        // O canvas mudou de tamanho: ajusta o desenho ao novo tamanho
+        this.visualizationEngine.resize();
+    }
+
+    /**
+     * Cria um seletor de cor (com etiqueta) para uma propriedade de cor.
+     *
+     * @param {string} property - Nome da propriedade.
+     * @param {string} value - Cor atual em formato #rrggbb.
+     * @returns {HTMLDivElement} Contentor com a etiqueta e o seletor de cor.
+     */
+    createColorControl(property, value) {
+        const container = document.createElement('div');
+        container.className = 'property-control';
+        
+        const label = document.createElement('label');
+        label.textContent = this.propertyLabels[property] || property;
+        label.htmlFor = `prop-${property}`;
+        
+        const input = document.createElement('input');
+        input.type = 'color';
+        input.id = `prop-${property}`;
+        input.value = value;
+        
+        input.addEventListener('input', (e) => {
+            this.visualizationEngine.updateVisualizationProperty(property, e.target.value);
         });
         
         container.appendChild(label);
