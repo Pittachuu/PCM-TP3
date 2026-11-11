@@ -3,6 +3,7 @@
   ISEL Curso LEIM. </h3> <br>
 Site: https://pittachuu.github.io/PCM-TP3/WaveCanvas/index.html <br>
 
+
 ## Trabalho realizador por: <br>
 Eduardo Navalho <br>
 Gabriel Siopa <br>
