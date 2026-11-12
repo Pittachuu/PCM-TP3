@@ -414,3 +414,26 @@ select {
     font-family: "Comic Sans MS", sans-serif;
     text-align: left;
 }
+
+.site-footer {
+    width: 100%;
+    background: linear-gradient(180deg, #101624 0%, #090c13 100%);
+    border-top: 2px solid #133aba;
+    box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.bottom-bar {
+    width: 100%;
+    min-height: 90px;
+    padding: 20px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.direitos-reservados {  
+    padding: 10px;
+    color: #ffffff;
+    font-family: "Comic Sans MS", sans-serif;
+    text-align: left;
+}

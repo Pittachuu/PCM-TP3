@@ -11,11 +11,6 @@ class OscilloscopeVisualization extends AudioVisualization {
         this.properties.traceColor = '#39ff14';
     }
 
-    /**
-     * Desenha o osciloscópio: quadrícula (se ativa) e traço da onda.
-     *
-     * @returns {void}
-     */
     draw() {
         this.clearCanvas();
         this.ctx.save();
@@ -29,12 +24,6 @@ class OscilloscopeVisualization extends AudioVisualization {
         this.ctx.restore();
     }
 
-    /**
-     * Desenha a quadrícula do ecrã (10 divisões na horizontal e 8 na vertical),
-     * com os eixos centrais e as marcas pequenas.
-     *
-     * @returns {void}
-     */
     drawGraticule() {
         const width = this.canvas.width;
         const height = this.canvas.height;
@@ -80,14 +69,6 @@ class OscilloscopeVisualization extends AudioVisualization {
         this.ctx.restore();
     }
 
-    /**
-     * Procura o ponto onde a onda cruza o centro a subir (o "trigger"), para
-     * o traço aparecer parado em vez de a andar de um lado para o outro.
-     *
-     * @param {Uint8Array|number[]} data - Amostras da forma de onda (128 = centro).
-     * @param {number} samples - Quantas amostras vão ser mostradas.
-     * @returns {number} Índice por onde começar a desenhar.
-     */
     findTrigger(data, samples) {
         for (let i = 1; i < data.length - samples; i++) {
             if (data[i - 1] < 128 && data[i] >= 128) {
@@ -97,11 +78,6 @@ class OscilloscopeVisualization extends AudioVisualization {
         return 0;
     }
 
-    /**
-     * Desenha o traço da onda com brilho (cor de fósforo).
-     *
-     * @returns {void}
-     */
     drawTrace() {
         const data = this.audioProcessor ? this.audioProcessor.getWaveformData() : this.testData;
         const samples = Math.min(Math.floor(this.properties.samples), data.length);

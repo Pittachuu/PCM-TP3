@@ -7,18 +7,12 @@ class Spectrum3DVisualization extends AudioVisualization {
         this.properties.depth = 30;
         this.properties.barCount = 64;
         this.properties.perspective = 0.5;
-        this.addColorProperties();
         this.properties.smoothing = 0.5;
+        this.addColorProperties();
         this.history = [];
         this.smoothedRow = [];
     }
 
-    /**
-     * Atualiza o áudio e, de dois em dois frames, guarda uma linha nova
-     * do espectro no histórico.
-     *
-     * @returns {void}
-     */
     update() {
         super.update();
         if (this.frameCount % 2 === 0) {
@@ -26,12 +20,6 @@ class Spectrum3DVisualization extends AudioVisualization {
         }
     }
 
-    /**
-     * Lê o espectro atual e acrescenta-o ao histórico (a linha mais recente
-     * fica à frente; as antigas vão ficando para trás).
-     *
-     * @returns {void}
-     */
     pushRow() {
         const data = this.audioProcessor ? this.audioProcessor.getFrequencyData() : this.testData;
         const normalized = this.applySensitivity(this.normalizeData(data), this.properties.sensitivity);
@@ -51,11 +39,6 @@ class Spectrum3DVisualization extends AudioVisualization {
         }
     }
 
-    /**
-     * Desenha o espectro em 3D simulado.
-     *
-     * @returns {void}
-     */
     draw() {
         this.clearCanvas();
         this.ctx.save();
@@ -63,13 +46,6 @@ class Spectrum3DVisualization extends AudioVisualization {
         this.ctx.restore();
     }
 
-    /**
-     * Desenha as linhas do histórico, das mais antigas (ao fundo, mais
-     * pequenas e mais altas no ecrã) para as mais recentes (à frente).
-     * Cada linha tapa as que ficam atrás dela.
-     *
-     * @returns {void}
-     */
     drawRows() {
         const rows = this.history;
         if (rows.length === 0) return;
@@ -98,26 +74,19 @@ class Spectrum3DVisualization extends AudioVisualization {
             this.ctx.lineTo(left, baseline);
             this.ctx.closePath();
             this.ctx.globalAlpha = 1;
+            this.ctx.shadowBlur = 0;
             this.ctx.fillStyle = background;
             this.ctx.fill();
 
             // Traça a linha (mais transparente quanto mais ao fundo)
             this.traceRow(rows[r], left, rowWidth, baseline, peak);
             this.ctx.globalAlpha = this.getIntensityAlpha() * (1 - z * 0.75);
+            this.ctx.shadowColor = this.properties.colorMid;
+            this.ctx.shadowBlur = this.getGlowAmount(10);
             this.ctx.stroke();
         }
     }
 
-    /**
-     * Cria o caminho de uma linha do espectro (sem o desenhar).
-     *
-     * @param {number[]} row - Valores da linha (0 a 1).
-     * @param {number} left - x do início da linha.
-     * @param {number} rowWidth - Largura da linha.
-     * @param {number} baseline - y da base da linha.
-     * @param {number} peak - Altura máxima de um pico.
-     * @returns {void}
-     */
     traceRow(row, left, rowWidth, baseline, peak) {
         this.ctx.beginPath();
         for (let i = 0; i < row.length; i++) {
