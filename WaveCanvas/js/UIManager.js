@@ -189,10 +189,18 @@ class UIManager {
         
         document.getElementById('audioFile').addEventListener('change', (e) => {
             if (e.target.files.length > 0) {
-                this.app.loadAudioFile(e.target.files[0]);
+                const file = e.target.files[0];
+
+                document.getElementById('chosenFileName').textContent = file.name;
+
+                this.app.loadAudioFile(file);
             }
+        });        
+
+        document.getElementById('chooseAudioFile').addEventListener('click', () => {
+            document.getElementById('audioFile').click();
         });
-        
+
         document.getElementById('expandBtn').addEventListener('click', () => {
             this.toggleExpanded();
         });
