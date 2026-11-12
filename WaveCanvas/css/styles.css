@@ -446,8 +446,8 @@ select {
 }
 
 .site-footer {
-    width: 100%;
-    background: linear-gradient(180deg, #2752b8 0%, #081e51 100%);
+    width: 100%; 
+    background: linear-gradient(180deg, #123660 0%, #071529 100%);
     border-top: 4px solid #0717a8;
     box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.2);
 }
