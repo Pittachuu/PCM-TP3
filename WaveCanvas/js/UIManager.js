@@ -99,8 +99,16 @@ class UIManager {
             card.appendChild(canvas);
             card.appendChild(label);
             container.appendChild(card);
-
+            
             card.addEventListener('click', () => {
+                document.getElementById('visualizationType').value = item.key;
+
+                document.querySelectorAll('.preview-card').forEach((preview) => {
+                    preview.classList.remove('active');
+                });
+
+                card.classList.add('active');
+
                 this.app.setVisualization(item.key);
             });
 
@@ -128,7 +136,6 @@ class UIManager {
         document.getElementById('currentVisualization').textContent = this.visualizationEngine.currentVisualization.name;
     }
 
-    
     updateAudioInfo(info, isError = false) {
         const audioStatus = document.getElementById('audioStatus');
         const audioLevel = document.getElementById('audioLevel');
