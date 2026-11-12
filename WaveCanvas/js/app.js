@@ -10,11 +10,6 @@ class App {
         this.init();
     }
     
-    /**
-     * Põe a aplicação no estado inicial (sem áudio, botão do microfone ativo).
-     *
-     * @returns {void}
-     */
     init() {
         console.log('App inicializada');
         this.isStarting = false;
@@ -22,13 +17,6 @@ class App {
         this.uiManager.updateAudioInfo({ status: 'Parado' });
     }
     
-    /**
-     * Liga o microfone, arranca a animação e atualiza a interface.
-     * Se falhar, mostra o erro e repõe o botão.
-     *
-     * @async
-     * @returns {Promise<void>}
-     */
     async startMicrophone() {
         console.log('Iniciando microfone...');
 
@@ -87,11 +75,6 @@ class App {
         }
     }
     
-    /**
-     * Para o áudio e a animação e repõe a interface.
-     *
-     * @returns {void}
-     */
     stopAudio() {
         console.log('Parando áudio...');
         this.audioProcessor.stop();

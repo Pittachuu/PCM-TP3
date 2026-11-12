@@ -23,14 +23,6 @@
                 
                 <div class="control-group">
                     <h3>Visualização</h3>
-                    <select id="visualizationType">
-                        <option value="spectrum">Espectro de Frequências</option>
-                        <option value="waveform">Forma de Onda</option>
-                        <option value="particles">Partículas</option>
-                        <option value="circular">Visualização Circular</option>
-                        <option value="spectrum3d">Espectro 3D</option>
-                        <option value="oscilloscope">Osciloscópio</option>
-                    </select>
                     <div id="visualization-previews" class="preview-list"></div>
                 </div>
                 
@@ -66,6 +58,7 @@
                 </div>
             </section>
         </main>
+
         
         <div id="errorModal" class="modal hidden">
             <div class="modal-content">
@@ -74,17 +67,18 @@
                 <p id="errorMessage"></p>
             </div>
         </div>
+        
     </div>
     
     <footer class="site-footer">
         <div class="bottom-bar">
-          <h6 class="direitos-reservados">
+        <h6 class="direitos-reservados">
             <i class="fa-regular fa-copyright"></i> 
             2026 Copyright: Eduardo e Gabriel.
-          </h6>
+        </h6>
         </div>
     </footer>
-
+    
     <script src="js/AudioProcessor.js"></script>
     <script src="js/AudioVisualization.js"></script>
     <script src="js/SpectrumVisualization.js"></script>

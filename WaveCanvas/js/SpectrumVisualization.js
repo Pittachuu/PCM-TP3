@@ -7,8 +7,8 @@ class SpectrumVisualization extends AudioVisualization {
         this.properties.barCount = 64;
         this.properties.barSpacing = 2;
         this.properties.showGrid = 1;
-        this.addColorProperties();
         this.properties.smoothing = 0.6;
+        this.addColorProperties();
         this.smoothedBars = [];
     }
     
@@ -40,6 +40,8 @@ class SpectrumVisualization extends AudioVisualization {
         this.smoothedBars = this.smoothData(this.smoothedBars, targets, this.properties.smoothing);
         
         this.ctx.fillStyle = this.createGradient();
+        this.ctx.shadowColor = this.properties.colorMid;
+        this.ctx.shadowBlur = this.getGlowAmount(10);
         
         for (let i = 0; i < barCount; i++) {
             const barHeight = this.smoothedBars[i] * this.canvas.height;

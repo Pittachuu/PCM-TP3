@@ -80,12 +80,6 @@ class UIManager {
         this.updatePreviewSelection();
     }
 
-    /**
-     * Cria uma pré-visualização (miniatura) de cada visualização, desenhada
-     * com os dados de teste. Clicar numa miniatura escolhe essa visualização.
-     *
-     * @returns {void}
-     */
     createPreviews() {
         const container = document.getElementById('visualization-previews');
         container.innerHTML = '';
@@ -107,7 +101,6 @@ class UIManager {
             container.appendChild(card);
 
             card.addEventListener('click', () => {
-                document.getElementById('visualizationType').value = item.key;
                 this.app.setVisualization(item.key);
             });
 
@@ -121,13 +114,8 @@ class UIManager {
         });
     }
 
-    /**
-     * Destaca a miniatura da visualização que está escolhida.
-     *
-     * @returns {void}
-     */
     updatePreviewSelection() {
-        const type = document.getElementById('visualizationType').value;
+        const type = this.visualizationEngine.currentType;
 
         document.querySelectorAll('.preview-card').forEach((card) => {
             card.classList.toggle('active', card.dataset.type === type);
@@ -191,10 +179,6 @@ class UIManager {
             }
         });
         
-        document.getElementById('visualizationType').addEventListener('change', (e) => {
-            this.app.setVisualization(e.target.value);
-        });
-        
         document.getElementById('expandBtn').addEventListener('click', () => {
             this.toggleExpanded();
         });
@@ -255,11 +239,6 @@ class UIManager {
         return container;
     }
 
-    /**
-     * Amplia o gráfico para cobrir a janela, ou volta ao tamanho normal.
-     *
-     * @returns {void}
-     */
     toggleExpanded() {
         const area = document.getElementById('visualization-area');
         const button = document.getElementById('expandBtn');
@@ -272,13 +251,6 @@ class UIManager {
         this.visualizationEngine.resize();
     }
 
-    /**
-     * Cria um seletor de cor (com etiqueta) para uma propriedade de cor.
-     *
-     * @param {string} property - Nome da propriedade.
-     * @param {string} value - Cor atual em formato #rrggbb.
-     * @returns {HTMLDivElement} Contentor com a etiqueta e o seletor de cor.
-     */
     createColorControl(property, value) {
         const container = document.createElement('div');
         container.className = 'property-control';

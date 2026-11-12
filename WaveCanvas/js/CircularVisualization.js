@@ -8,27 +8,17 @@ class CircularVisualization extends AudioVisualization {
         this.properties.innerRadius = 0.3;
         this.properties.rotationSpeed = 0.5;
         this.properties.glow = 8;
-        this.addColorProperties();
         this.properties.smoothing = 0.6;
+        this.addColorProperties();
         this.smoothedBars = [];
         this.rotation = 0;
     }
 
-    /**
-     * Atualiza o áudio e faz rodar o círculo um pouco.
-     *
-     * @returns {void}
-     */
     update() {
         super.update();
         this.rotation += this.properties.rotationSpeed * 0.01;
     }
 
-    /**
-     * Desenha o espectro em forma de círculo.
-     *
-     * @returns {void}
-     */
     draw() {
         this.clearCanvas();
         this.ctx.save();
@@ -37,12 +27,6 @@ class CircularVisualization extends AudioVisualization {
         this.ctx.restore();
     }
 
-    /**
-     * Desenha as barras de frequência à volta de um círculo. O lado esquerdo
-     * e o direito são simétricos (espelho).
-     *
-     * @returns {void}
-     */
     drawRadialBars() {
         const data = this.audioProcessor ? this.audioProcessor.getFrequencyData() : this.testData;
         const normalized = this.applySensitivity(this.normalizeData(data), this.properties.sensitivity);
@@ -64,7 +48,7 @@ class CircularVisualization extends AudioVisualization {
         const maxLength = maxRadius - innerRadius;
         const palette = this.getPalette();
 
-        const gradient = this.ctx.createRadialGradient(centerX, centerY, innerRadius, centerX, centerY, maxRadius);
+        const gradient = this.ctx.createRadialGradient(centerX, centerY, innerRadius, centerX, centerY, innerRadius + maxLength * this.gradientReach);
         gradient.addColorStop(0, palette[0]);
         gradient.addColorStop(0.5, palette[1]);
         gradient.addColorStop(1, palette[2]);

@@ -49,13 +49,6 @@ class ParticleVisualization extends AudioVisualization {
         this.lastHeight = this.canvas.height;
     }
 
-    /**
-     * Ajusta o tamanho do canvas e reposiciona as partículas na mesma proporção.
-     *
-     * @param {number} width - Nova largura.
-     * @param {number} height - Nova altura.
-     * @returns {void}
-     */
     resize(width, height) {
         super.resize(width, height);
         this.adaptToCanvas();
@@ -91,21 +84,11 @@ class ParticleVisualization extends AudioVisualization {
         }
     }
 
-    /**
-     * Escolhe ao acaso uma das cores da paleta.
-     *
-     * @returns {string} Cor em formato #rrggbb.
-     */
     randomPaletteColor() {
         const palette = this.getPalette();
         return palette[Math.floor(Math.random() * palette.length)];
     }
 
-    /**
-     * Dá a cada partícula uma cor nova da paleta (quando o utilizador muda as cores).
-     *
-     * @returns {void}
-     */
     recolorParticles() {
         for (const p of this.particles) {
             p.color = this.randomPaletteColor();
@@ -157,6 +140,9 @@ class ParticleVisualization extends AudioVisualization {
     }
     
     drawParticles() {
+        this.ctx.shadowColor = this.properties.colorMid;
+        this.ctx.shadowBlur = this.getGlowAmount(10);
+
         for (const p of this.particles) {
             this.ctx.beginPath();
             this.ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
