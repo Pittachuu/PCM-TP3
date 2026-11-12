@@ -126,13 +126,15 @@ class UIManager {
      *
      * @returns {void}
      */
+
     updatePreviewSelection() {
         const type = document.getElementById('visualizationType').value;
 
-        document.querySelectorAll('.preview-card').forEach((card) => {
-            card.classList.toggle('active', card.dataset.type === type);
-        });
+        document.querySelectorAll('.preview-card').forEach((card) => {card.classList.toggle('active', card.dataset.type === type);});
+
+        document.getElementById('currentVisualization').textContent = this.visualizationEngine.currentVisualization.name;
     }
+
     
     updateAudioInfo(info, isError = false) {
         const audioStatus = document.getElementById('audioStatus');

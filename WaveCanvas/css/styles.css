@@ -6,24 +6,26 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #1a1a2e;
+    min-height: 100vh;
     color: #e6e6e6;
+    background-color: #0b1120;
     line-height: 1.6;
 }
 
 #app {
-    max-width: 1200px;
+    max-width: 100%;
+    background-color: #0b1120;
     margin: 0 auto;
     padding: 20px;
 }
 
 header {
     text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 50px;
+    margin-top: 50px;
 }
 
 h1 {
-    color: #4cc9f0;
     font-size: 2.5rem;
 }
 
@@ -37,63 +39,130 @@ main {
 #controls {
     grid-column: 1;
     grid-row: 1 / span 2;
-    background-color: #16213e;
+    background-color: #02040a;
     padding: 20px;
+    border: 3px solid #0717a8;
     border-radius: 8px;
 }
 
 .control-group {
-    margin-bottom: 25px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    margin-bottom: 30px;
+    padding-bottom: 30px;
+    border-bottom: 1px solid #496285;
+}
+
+.control-group:last-child {
+    margin-bottom: 20px;
+    padding-bottom: 0;
+    border-bottom: none;
 }
 
 .control-group h3 {
     margin-bottom: 15px;
-    color: #4cc9f0;
+    color: #f2f4f4;
     border-bottom: 1px solid #4cc9f0;
     padding-bottom: 5px;
 }
 
-.btn-primary, .btn-secondary {
+.mic-btn, .stop-aud-btn {
     padding: 10px 15px;
-    border: none;
+    border: 2px solid #000000;
     border-radius: 4px;
     cursor: pointer;
     font-weight: bold;
     margin-right: 10px;
     margin-bottom: 10px;
-    transition: background-color 0.3s;
+    transition: transform 0.2s ease, background-color 0.3s;
 }
 
-.btn-primary {
+.mic-btn{
     background-color: #4361ee;
     color: white;
 }
 
-.btn-primary:hover {
-    background-color: #3a56d4;
+.mic-btn i, .stop-aud-btn i {
+    margin-left: 5px;
+}
+.mic-btn:hover {
+    background-color: #092286;
+    transform: translateY(-4px);
 }
 
-.btn-secondary {
-    background-color: #6c757d;
+.stop-aud-btn {
+    background-color: #c60f0f;
     color: white;
 }
 
-.btn-secondary:hover {
-    background-color: #5a6268;
+.stop-aud-btn:hover {
+    background-color: #750606;
+    transform: translateY(-4px);
 }
 
-.btn-primary:disabled, .btn-secondary:disabled {
+.mic-btn:disabled, .stop-aud-btn:disabled {
     background-color: #495057;
     cursor: not-allowed;
+    transform: none;
+}
+
+.audio-type{
+    background-color: #4361ee;
+    color: white;
 }
 
 input[type="file"] {
     width: 100%;
     padding: 8px;
-    background-color: #0f3460;
-    border: 1px solid #4cc9f0;
+    background-color: #092a52;
+    border: 1px solid #027092;
     border-radius: 4px;
     color: #e6e6e6;
+}
+
+
+input[type="file"]::file-selector-button {
+    padding: 10px 15px;
+    border: 2px solid #000000;
+    border-radius: 4px;
+    background-color: #7b8a06;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    margin-right: 10px;
+    transition: transform 0.2s ease, background-color 0.3s;
+}
+
+input[type="file"]::file-selector-button:hover {
+    background-color: #6c6e07;
+    transform: scale(1.05);
+}
+
+.export-buttons{
+    display: flex;
+    flex-direction: row;
+}
+
+.png-btn, .jpeg-btn{
+    padding: 10px 15px;
+    border: 2px solid #000000;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-right: 10px;
+    margin-left: 10px;
+    margin-bottom: 10px;
+    transition: transform 0.2s ease,background-color 0.3s;
+    background-color: #4361ee;
+    color: white;
+}
+
+.png-btn:hover, .jpeg-btn:hover {
+    background-color: #092286;
+    transform: translateY(-4px);
 }
 
 select {
@@ -114,6 +183,18 @@ select {
     display: flex;
     flex-direction: column;
     align-items: center;
+}
+
+
+.current-visualization {
+    width: 100%;
+    padding: 12px;
+    background-color: #0f3460;
+    border: 1px solid #4cc9f0;
+    border-radius: 4px;
+    color: white;
+    text-align: center;
+    font-weight: bold;
 }
 
 #audioCanvas {
@@ -205,23 +286,30 @@ select {
     cursor: pointer;
 }
 
+
 .preview-list {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr;
     gap: 10px;
     margin-top: 15px;
+    width: 100%;
 }
 
 .preview-card {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 8px;
     background-color: #1a1a2e;
     color: #e6e6e6;
     border: 2px solid transparent;
     border-radius: 6px;
-    padding: 5px;
     cursor: pointer;
     font-family: inherit;
     font-size: 0.8rem;
-    text-align: center;
+    text-align: left;
 }
 
 .preview-card:hover {
@@ -235,11 +323,12 @@ select {
 
 .preview-card canvas {
     display: block;
-    width: 100%;
+    width: 80px;
     height: auto;
     border-radius: 4px;
-    margin-bottom: 5px;
+    margin-bottom: 0;
     background-color: #0f3460;
+    flex-shrink: 0;
 }
 
 #canvas-wrapper {
